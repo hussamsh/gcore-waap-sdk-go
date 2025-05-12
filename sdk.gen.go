@@ -5,21 +5,31 @@ package sdk
 
 import (
 	"bytes"
-	"compress/gzip"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"strings"
 	"time"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
+)
+
+// Defines values for AdvancedRulePhase.
+const (
+	AdvancedRulePhaseAccess       AdvancedRulePhase = "access"
+	AdvancedRulePhaseBodyFilter   AdvancedRulePhase = "body_filter"
+	AdvancedRulePhaseHeaderFilter AdvancedRulePhase = "header_filter"
+)
+
+// Defines values for AdvancedRuleResponsePhase.
+const (
+	AdvancedRuleResponsePhaseAccess       AdvancedRuleResponsePhase = "access"
+	AdvancedRuleResponsePhaseBodyFilter   AdvancedRuleResponsePhase = "body_filter"
+	AdvancedRuleResponsePhaseHeaderFilter AdvancedRuleResponsePhase = "header_filter"
 )
 
 // Defines values for ApiPathHttpScheme.
@@ -265,6 +275,13 @@ const (
 	TrafficTypeTimeout           TrafficType = "timeout"
 )
 
+// Defines values for UpdateAdvancedRulePhase.
+const (
+	UpdateAdvancedRulePhaseAccess       UpdateAdvancedRulePhase = "access"
+	UpdateAdvancedRulePhaseBodyFilter   UpdateAdvancedRulePhase = "body_filter"
+	UpdateAdvancedRulePhaseHeaderFilter UpdateAdvancedRulePhase = "header_filter"
+)
+
 // Defines values for UrlConditionMatchType.
 const (
 	UrlConditionMatchTypeContains UrlConditionMatchType = "Contains"
@@ -296,6 +313,22 @@ const (
 	GetDomainsV1DomainsGetParamsOrderingMinusStatus    GetDomainsV1DomainsGetParamsOrdering = "-status"
 	GetDomainsV1DomainsGetParamsOrderingName           GetDomainsV1DomainsGetParamsOrdering = "name"
 	GetDomainsV1DomainsGetParamsOrderingStatus         GetDomainsV1DomainsGetParamsOrdering = "status"
+)
+
+// Defines values for GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering.
+const (
+	GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrderingAction           GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering = "action"
+	GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrderingDescription      GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering = "description"
+	GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrderingEnabled          GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering = "enabled"
+	GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrderingId               GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering = "id"
+	GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrderingMinusAction      GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering = "-action"
+	GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrderingMinusDescription GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering = "-description"
+	GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrderingMinusEnabled     GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering = "-enabled"
+	GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrderingMinusId          GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering = "-id"
+	GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrderingMinusName        GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering = "-name"
+	GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrderingMinusPhase       GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering = "-phase"
+	GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrderingName             GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering = "name"
+	GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrderingPhase            GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering = "phase"
 )
 
 // Defines values for GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsPhase.
@@ -343,6 +376,20 @@ const (
 	GetApiPathsV1DomainsDomainIdApiPathsGetParamsOrderingStatus             GetApiPathsV1DomainsDomainIdApiPathsGetParamsOrdering = "status"
 )
 
+// Defines values for GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrdering.
+const (
+	GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrderingAction           GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrdering = "action"
+	GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrderingDescription      GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrdering = "description"
+	GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrderingEnabled          GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrdering = "enabled"
+	GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrderingId               GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrdering = "id"
+	GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrderingMinusAction      GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrdering = "-action"
+	GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrderingMinusDescription GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrdering = "-description"
+	GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrderingMinusEnabled     GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrdering = "-enabled"
+	GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrderingMinusId          GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrdering = "-id"
+	GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrderingMinusName        GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrdering = "-name"
+	GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrderingName             GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrdering = "name"
+)
+
 // Defines values for GetDdosAttacksV1DomainsDomainIdDdosAttacksGetParamsOrdering.
 const (
 	GetDdosAttacksV1DomainsDomainIdDdosAttacksGetParamsOrderingEndTime        GetDdosAttacksV1DomainsDomainIdDdosAttacksGetParamsOrdering = "end_time"
@@ -358,12 +405,50 @@ const (
 	GetDdosInfoV1DomainsDomainIdDdosInfoGetParamsGroupByUserAgent GetDdosInfoV1DomainsDomainIdDdosInfoGetParamsGroupBy = "User-Agent"
 )
 
+// Defines values for GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrdering.
+const (
+	GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrderingAction           GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrdering = "action"
+	GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrderingDescription      GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrdering = "description"
+	GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrderingEnabled          GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrdering = "enabled"
+	GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrderingId               GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrdering = "id"
+	GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrderingMinusAction      GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrdering = "-action"
+	GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrderingMinusDescription GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrdering = "-description"
+	GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrderingMinusEnabled     GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrdering = "-enabled"
+	GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrderingMinusId          GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrdering = "-id"
+	GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrderingMinusName        GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrdering = "-name"
+	GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrderingName             GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrdering = "name"
+)
+
 // Defines values for GetRequestsV1DomainsDomainIdRequestsGetParamsActions.
 const (
 	GetRequestsV1DomainsDomainIdRequestsGetParamsActionsAllow     GetRequestsV1DomainsDomainIdRequestsGetParamsActions = "allow"
 	GetRequestsV1DomainsDomainIdRequestsGetParamsActionsBlock     GetRequestsV1DomainsDomainIdRequestsGetParamsActions = "block"
 	GetRequestsV1DomainsDomainIdRequestsGetParamsActionsCaptcha   GetRequestsV1DomainsDomainIdRequestsGetParamsActions = "captcha"
 	GetRequestsV1DomainsDomainIdRequestsGetParamsActionsHandshake GetRequestsV1DomainsDomainIdRequestsGetParamsActions = "handshake"
+)
+
+// Defines values for GetEventStatisticsV1DomainsDomainIdStatsGetParamsAction.
+const (
+	GetEventStatisticsV1DomainsDomainIdStatsGetParamsActionBlock     GetEventStatisticsV1DomainsDomainIdStatsGetParamsAction = "block"
+	GetEventStatisticsV1DomainsDomainIdStatsGetParamsActionCaptcha   GetEventStatisticsV1DomainsDomainIdStatsGetParamsAction = "captcha"
+	GetEventStatisticsV1DomainsDomainIdStatsGetParamsActionHandshake GetEventStatisticsV1DomainsDomainIdStatsGetParamsAction = "handshake"
+	GetEventStatisticsV1DomainsDomainIdStatsGetParamsActionMonitor   GetEventStatisticsV1DomainsDomainIdStatsGetParamsAction = "monitor"
+)
+
+// Defines values for GetEventStatisticsV1DomainsDomainIdStatsGetParamsResult.
+const (
+	GetEventStatisticsV1DomainsDomainIdStatsGetParamsResultAllowed   GetEventStatisticsV1DomainsDomainIdStatsGetParamsResult = "allowed"
+	GetEventStatisticsV1DomainsDomainIdStatsGetParamsResultBlocked   GetEventStatisticsV1DomainsDomainIdStatsGetParamsResult = "blocked"
+	GetEventStatisticsV1DomainsDomainIdStatsGetParamsResultMonitored GetEventStatisticsV1DomainsDomainIdStatsGetParamsResult = "monitored"
+	GetEventStatisticsV1DomainsDomainIdStatsGetParamsResultPassed    GetEventStatisticsV1DomainsDomainIdStatsGetParamsResult = "passed"
+)
+
+// Defines values for GetOrganizationsV1OrganizationsGetParamsOrdering.
+const (
+	GetOrganizationsV1OrganizationsGetParamsOrderingId        GetOrganizationsV1OrganizationsGetParamsOrdering = "id"
+	GetOrganizationsV1OrganizationsGetParamsOrderingMinusId   GetOrganizationsV1OrganizationsGetParamsOrdering = "-id"
+	GetOrganizationsV1OrganizationsGetParamsOrderingMinusName GetOrganizationsV1OrganizationsGetParamsOrdering = "-name"
+	GetOrganizationsV1OrganizationsGetParamsOrderingName      GetOrganizationsV1OrganizationsGetParamsOrdering = "name"
 )
 
 // Defines values for GetInsightTypesV1SecurityInsightsTypesGetParamsOrdering.
@@ -388,12 +473,20 @@ const (
 	GetStatisticsSeriesV1StatisticsSeriesGetParamsMetricsTotalRequests GetStatisticsSeriesV1StatisticsSeriesGetParamsMetrics = "total_requests"
 )
 
+// Defines values for GetTagsV1TagsGetParamsOrdering.
+const (
+	GetTagsV1TagsGetParamsOrderingMinusName         GetTagsV1TagsGetParamsOrdering = "-name"
+	GetTagsV1TagsGetParamsOrderingMinusReadableName GetTagsV1TagsGetParamsOrdering = "-readable_name"
+	GetTagsV1TagsGetParamsOrderingMinusReserved     GetTagsV1TagsGetParamsOrdering = "-reserved"
+	GetTagsV1TagsGetParamsOrderingName              GetTagsV1TagsGetParamsOrdering = "name"
+	GetTagsV1TagsGetParamsOrderingReadableName      GetTagsV1TagsGetParamsOrdering = "readable_name"
+	GetTagsV1TagsGetParamsOrderingReserved          GetTagsV1TagsGetParamsOrdering = "reserved"
+)
+
 // APICompositeError defines model for APICompositeError.
 type APICompositeError struct {
 	// Detail A detailed human-readable explanation of the error.
-	Detail *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"detail"`
+	Detail *string `json:"detail"`
 
 	// Errors A list of detailed errors for individual fields.
 	Errors []APIFieldError `json:"errors"`
@@ -411,9 +504,7 @@ type APICompositeError struct {
 // APIError defines model for APIError.
 type APIError struct {
 	// Detail A detailed human-readable explanation of the error.
-	Detail *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"detail"`
+	Detail *string `json:"detail"`
 
 	// Status The HTTP status code applicable to this error.
 	Status int `json:"status"`
@@ -459,15 +550,10 @@ type APIFieldError_Loc struct {
 // AdvancedRule A request to create a new advanced rule
 type AdvancedRule struct {
 	// Action The action that the rule takes when triggered
-	Action struct {
-		// Embedded struct due to allOf(#/components/schemas/CustomerRuleAction-Input)
-		CustomerRuleActionInput `yaml:",inline"`
-	} `json:"action"`
+	Action CustomerRuleActionInput `json:"action"`
 
 	// Description The description assigned to the rule
-	Description *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"description"`
+	Description *string `json:"description"`
 
 	// Enabled Whether or not the rule is enabled
 	Enabled bool `json:"enabled"`
@@ -483,9 +569,7 @@ type AdvancedRule struct {
 	// The "header_filter" phase is responsible for modifying the HTTP headers of a response before they are sent back to the client.
 	//
 	// The "body_filter" phase is responsible for modifying the body of a response before it is sent back to the client.
-	Phase *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"phase"`
+	Phase *AdvancedRulePhase `json:"phase"`
 
 	// Source A CEL syntax expression that contains the rule's conditions. Allowed objects are: request, whois, session, response, tags, user_defined_tags, user_agent, client_data.
 	//
@@ -493,17 +577,16 @@ type AdvancedRule struct {
 	Source string `json:"source"`
 }
 
+// AdvancedRulePhase defines model for AdvancedRule.Phase.
+type AdvancedRulePhase string
+
 // AdvancedRuleDescriptor Advanced rules descriptor object
 type AdvancedRuleDescriptor struct {
 	// Attrs The object's attributes list
-	Attrs *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"attrs"`
+	Attrs *[]AdvancedRuleDescriptorAttr `json:"attrs"`
 
 	// Description The object's description
-	Description *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"description"`
+	Description *string `json:"description"`
 
 	// Name The object's name
 	Name string `json:"name"`
@@ -515,9 +598,7 @@ type AdvancedRuleDescriptor struct {
 // AdvancedRuleDescriptorArg An argument of a descriptor's object
 type AdvancedRuleDescriptorArg struct {
 	// Description The argument's description
-	Description *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"description"`
+	Description *string `json:"description"`
 
 	// Name The argument's name
 	Name string `json:"name"`
@@ -529,19 +610,13 @@ type AdvancedRuleDescriptorArg struct {
 // AdvancedRuleDescriptorAttr An attribute of a descriptor's object
 type AdvancedRuleDescriptorAttr struct {
 	// Args A list of arguments for the attribute
-	Args *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"args"`
+	Args *[]AdvancedRuleDescriptorArg `json:"args"`
 
 	// Description The attribute's description
-	Description *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"description"`
+	Description *string `json:"description"`
 
 	// Hint The attribute's hint
-	Hint *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"hint"`
+	Hint *string `json:"hint"`
 
 	// Name The attribute's name
 	Name string `json:"name"`
@@ -552,9 +627,7 @@ type AdvancedRuleDescriptorAttr struct {
 
 // AdvancedRuleDescriptorResponse A response from a request to retrieve an advanced rules descriptor
 type AdvancedRuleDescriptorResponse struct {
-	Objects *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"objects"`
+	Objects *[]AdvancedRuleDescriptor `json:"objects"`
 
 	// Version The descriptor's version
 	Version string `json:"version"`
@@ -563,15 +636,10 @@ type AdvancedRuleDescriptorResponse struct {
 // AdvancedRuleResponse An advanced WAAP rule applied to a domain
 type AdvancedRuleResponse struct {
 	// Action The action that the rule takes when triggered
-	Action struct {
-		// Embedded struct due to allOf(#/components/schemas/CustomerRuleAction-Output)
-		CustomerRuleActionOutput `yaml:",inline"`
-	} `json:"action"`
+	Action CustomerRuleActionOutput `json:"action"`
 
 	// Description The description assigned to the rule
-	Description *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"description"`
+	Description *string `json:"description"`
 
 	// Enabled Whether or not the rule is enabled
 	Enabled bool `json:"enabled"`
@@ -590,9 +658,7 @@ type AdvancedRuleResponse struct {
 	// The "header_filter" phase is responsible for modifying the HTTP headers of a response before they are sent back to the client.
 	//
 	// The "body_filter" phase is responsible for modifying the body of a response before it is sent back to the client.
-	Phase *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"phase"`
+	Phase *AdvancedRuleResponsePhase `json:"phase"`
 
 	// Source A CEL syntax expression that contains the rule's conditions. Allowed objects are: request, whois, session, response, tags, user_defined_tags, user_agent, client_data.
 	//
@@ -600,32 +666,25 @@ type AdvancedRuleResponse struct {
 	Source string `json:"source"`
 }
 
+// AdvancedRuleResponsePhase defines model for AdvancedRuleResponse.Phase.
+type AdvancedRuleResponsePhase string
+
 // ApiDiscoverySettings Response model for the API discovery settings
 type ApiDiscoverySettings struct {
 	// DescriptionFileLocation The URL of the API description file. This will be periodically scanned if `descriptionFileScanEnabled` is enabled. Supported formats are YAML and JSON, and it must adhere to OpenAPI versions 2, 3, or 3.1.
-	DescriptionFileLocation *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"descriptionFileLocation"`
+	DescriptionFileLocation *string `json:"descriptionFileLocation"`
 
 	// DescriptionFileScanEnabled Indicates if periodic scan of the description file is enabled
-	DescriptionFileScanEnabled *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"descriptionFileScanEnabled"`
+	DescriptionFileScanEnabled *bool `json:"descriptionFileScanEnabled"`
 
 	// DescriptionFileScanIntervalHours The interval in hours for scanning the description file
-	DescriptionFileScanIntervalHours *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"descriptionFileScanIntervalHours"`
+	DescriptionFileScanIntervalHours *int `json:"descriptionFileScanIntervalHours"`
 
 	// TrafficScanEnabled Indicates if traffic scan is enabled. Traffic scan is used to discover undocumented APIs
-	TrafficScanEnabled *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"trafficScanEnabled"`
+	TrafficScanEnabled *bool `json:"trafficScanEnabled"`
 
 	// TrafficScanIntervalHours The interval in hours for scanning the traffic
-	TrafficScanIntervalHours *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"trafficScanIntervalHours"`
+	TrafficScanIntervalHours *int `json:"trafficScanIntervalHours"`
 }
 
 // ApiPathGroups Response model for the API path groups
@@ -652,10 +711,7 @@ type ApiPathResponse struct {
 	FirstDetected time.Time `json:"first_detected"`
 
 	// HttpScheme The HTTP version of the API path
-	HttpScheme struct {
-		// Embedded struct due to allOf(#/components/schemas/ApiPathHttpScheme)
-		ApiPathHttpScheme `yaml:",inline"`
-	} `json:"http_scheme"`
+	HttpScheme ApiPathHttpScheme `json:"http_scheme"`
 
 	// Id The path ID
 	Id openapi_types.UUID `json:"id"`
@@ -664,10 +720,7 @@ type ApiPathResponse struct {
 	LastDetected time.Time `json:"last_detected"`
 
 	// Method The API RESTful method
-	Method struct {
-		// Embedded struct due to allOf(#/components/schemas/ApiPathMethod)
-		ApiPathMethod `yaml:",inline"`
-	} `json:"method"`
+	Method ApiPathMethod `json:"method"`
 
 	// Path The API path, locations that are saved for resource IDs will be put in curly brackets
 	Path string `json:"path"`
@@ -676,16 +729,10 @@ type ApiPathResponse struct {
 	RequestCount int `json:"request_count"`
 
 	// Source The source of the discovered API
-	Source struct {
-		// Embedded struct due to allOf(#/components/schemas/ApiPathSource)
-		ApiPathSource `yaml:",inline"`
-	} `json:"source"`
+	Source ApiPathSource `json:"source"`
 
 	// Status The status of the discovered API path
-	Status struct {
-		// Embedded struct due to allOf(#/components/schemas/ApiPathStatus)
-		ApiPathStatus `yaml:",inline"`
-	} `json:"status"`
+	Status ApiPathStatus `json:"status"`
 
 	// Tags An array of tags associated with the API path
 	Tags []string `json:"tags"`
@@ -700,9 +747,7 @@ type ApiPathStatus string
 // ApiScanResult The result of a scan
 type ApiScanResult struct {
 	// EndTime The date and time the scan ended
-	EndTime *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"end_time"`
+	EndTime *time.Time `json:"end_time"`
 
 	// Id The scan ID
 	Id openapi_types.UUID `json:"id"`
@@ -714,16 +759,10 @@ type ApiScanResult struct {
 	StartTime time.Time `json:"start_time"`
 
 	// Status The status of the scan
-	Status struct {
-		// Embedded struct due to allOf(#/components/schemas/TaskResultStatus)
-		TaskResultStatus `yaml:",inline"`
-	} `json:"status"`
+	Status TaskResultStatus `json:"status"`
 
 	// Type The type of scan
-	Type struct {
-		// Embedded struct due to allOf(#/components/schemas/ApiScanType)
-		ApiScanType `yaml:",inline"`
-	} `json:"type"`
+	Type ApiScanType `json:"type"`
 }
 
 // ApiScanType The different types of scans that can be performed
@@ -860,18 +899,13 @@ type ClientInfo struct {
 	Features []string `json:"features"`
 
 	// Id The client ID
-	Id *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"id"`
+	Id *int `json:"id"`
 
 	// Quotas Quotas for the client
 	Quotas map[string]QuotaItem `json:"quotas"`
 
 	// Service Information about the WAAP service status
-	Service struct {
-		// Embedded struct due to allOf(#/components/schemas/Service)
-		Service `yaml:",inline"`
-	} `json:"service"`
+	Service Service `json:"service"`
 }
 
 // CommonTag Common tag details
@@ -1005,9 +1039,7 @@ type CreateInsightSilencePayload struct {
 	Comment string `json:"comment"`
 
 	// ExpireAt The date and time the silence expires in ISO 8601 format
-	ExpireAt *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"expire_at"`
+	ExpireAt *time.Time `json:"expire_at"`
 
 	// InsightType The slug of the insight type
 	InsightType string `json:"insight_type"`
@@ -1024,35 +1056,15 @@ type CustomPagePreviewResponse struct {
 
 // CustomPageSetCreate Create a custom page set
 type CustomPageSetCreate struct {
-	Block *struct {
-		// Embedded struct due to allOf(#/components/schemas/BlockPageData)
-		BlockPageData `yaml:",inline"`
-	} `json:"block"`
-	BlockCsrf *struct {
-		// Embedded struct due to allOf(#/components/schemas/BlockCsrfPageData)
-		BlockCsrfPageData `yaml:",inline"`
-	} `json:"block_csrf"`
-	Captcha *struct {
-		// Embedded struct due to allOf(#/components/schemas/CaptchaPageData)
-		CaptchaPageData `yaml:",inline"`
-	} `json:"captcha"`
-	CookieDisabled *struct {
-		// Embedded struct due to allOf(#/components/schemas/CookieDisabledPageData)
-		CookieDisabledPageData `yaml:",inline"`
-	} `json:"cookie_disabled"`
+	Block          *BlockPageData          `json:"block"`
+	BlockCsrf      *BlockCsrfPageData      `json:"block_csrf"`
+	Captcha        *CaptchaPageData        `json:"captcha"`
+	CookieDisabled *CookieDisabledPageData `json:"cookie_disabled"`
 
 	// Domains List of domain IDs that are associated with this page set
-	Domains *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"domains"`
-	Handshake *struct {
-		// Embedded struct due to allOf(#/components/schemas/HandshakePageData)
-		HandshakePageData `yaml:",inline"`
-	} `json:"handshake"`
-	JavascriptDisabled *struct {
-		// Embedded struct due to allOf(#/components/schemas/JavascriptDisabledPageData)
-		JavascriptDisabledPageData `yaml:",inline"`
-	} `json:"javascript_disabled"`
+	Domains            *[]int                      `json:"domains"`
+	Handshake          *HandshakePageData          `json:"handshake"`
+	JavascriptDisabled *JavascriptDisabledPageData `json:"javascript_disabled"`
 
 	// Name Name of the custom page set
 	Name string `json:"name"`
@@ -1060,38 +1072,18 @@ type CustomPageSetCreate struct {
 
 // CustomPageSetResponse defines model for CustomPageSetResponse.
 type CustomPageSetResponse struct {
-	Block *struct {
-		// Embedded struct due to allOf(#/components/schemas/BlockPageData)
-		BlockPageData `yaml:",inline"`
-	} `json:"block"`
-	BlockCsrf *struct {
-		// Embedded struct due to allOf(#/components/schemas/BlockCsrfPageData)
-		BlockCsrfPageData `yaml:",inline"`
-	} `json:"block_csrf"`
-	Captcha *struct {
-		// Embedded struct due to allOf(#/components/schemas/CaptchaPageData)
-		CaptchaPageData `yaml:",inline"`
-	} `json:"captcha"`
-	CookieDisabled *struct {
-		// Embedded struct due to allOf(#/components/schemas/CookieDisabledPageData)
-		CookieDisabledPageData `yaml:",inline"`
-	} `json:"cookie_disabled"`
+	Block          *BlockPageData          `json:"block"`
+	BlockCsrf      *BlockCsrfPageData      `json:"block_csrf"`
+	Captcha        *CaptchaPageData        `json:"captcha"`
+	CookieDisabled *CookieDisabledPageData `json:"cookie_disabled"`
 
 	// Domains List of domain IDs that are associated with this page set
-	Domains *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"domains"`
-	Handshake *struct {
-		// Embedded struct due to allOf(#/components/schemas/HandshakePageData)
-		HandshakePageData `yaml:",inline"`
-	} `json:"handshake"`
+	Domains   *[]int             `json:"domains"`
+	Handshake *HandshakePageData `json:"handshake"`
 
 	// Id The ID of the custom page set
-	Id                 int `json:"id"`
-	JavascriptDisabled *struct {
-		// Embedded struct due to allOf(#/components/schemas/JavascriptDisabledPageData)
-		JavascriptDisabledPageData `yaml:",inline"`
-	} `json:"javascript_disabled"`
+	Id                 int                         `json:"id"`
+	JavascriptDisabled *JavascriptDisabledPageData `json:"javascript_disabled"`
 
 	// Name Name of the custom page set
 	Name string `json:"name"`
@@ -1099,57 +1091,30 @@ type CustomPageSetResponse struct {
 
 // CustomPageSetUpdate Update a custom page set
 type CustomPageSetUpdate struct {
-	Block *struct {
-		// Embedded struct due to allOf(#/components/schemas/BlockPageData)
-		BlockPageData `yaml:",inline"`
-	} `json:"block"`
-	BlockCsrf *struct {
-		// Embedded struct due to allOf(#/components/schemas/BlockCsrfPageData)
-		BlockCsrfPageData `yaml:",inline"`
-	} `json:"block_csrf"`
-	Captcha *struct {
-		// Embedded struct due to allOf(#/components/schemas/CaptchaPageData)
-		CaptchaPageData `yaml:",inline"`
-	} `json:"captcha"`
-	CookieDisabled *struct {
-		// Embedded struct due to allOf(#/components/schemas/CookieDisabledPageData)
-		CookieDisabledPageData `yaml:",inline"`
-	} `json:"cookie_disabled"`
+	Block          *BlockPageData          `json:"block"`
+	BlockCsrf      *BlockCsrfPageData      `json:"block_csrf"`
+	Captcha        *CaptchaPageData        `json:"captcha"`
+	CookieDisabled *CookieDisabledPageData `json:"cookie_disabled"`
 
 	// Domains List of domain IDs that are associated with this page set
-	Domains *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"domains"`
-	Handshake *struct {
-		// Embedded struct due to allOf(#/components/schemas/HandshakePageData)
-		HandshakePageData `yaml:",inline"`
-	} `json:"handshake"`
-	JavascriptDisabled *struct {
-		// Embedded struct due to allOf(#/components/schemas/JavascriptDisabledPageData)
-		JavascriptDisabledPageData `yaml:",inline"`
-	} `json:"javascript_disabled"`
+	Domains            *[]int                      `json:"domains"`
+	Handshake          *HandshakePageData          `json:"handshake"`
+	JavascriptDisabled *JavascriptDisabledPageData `json:"javascript_disabled"`
 
 	// Name Name of the custom page set
-	Name *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"name"`
+	Name *string `json:"name"`
 }
 
 // CustomRule A request to create a new WAAP rule
 type CustomRule struct {
 	// Action The action that the rule takes when triggered
-	Action struct {
-		// Embedded struct due to allOf(#/components/schemas/CustomerRuleAction-Input)
-		CustomerRuleActionInput `yaml:",inline"`
-	} `json:"action"`
+	Action CustomerRuleActionInput `json:"action"`
 
 	// Conditions The conditions required for the WAAP engine to trigger the rule. Rules may have between 1 and 5 conditions. All conditions must pass for the rule to trigger
 	Conditions []CustomRuleConditionInput `json:"conditions"`
 
 	// Description The description assigned to the rule
-	Description *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"description"`
+	Description *string `json:"description"`
 
 	// Enabled Whether or not the rule is enabled
 	Enabled bool `json:"enabled"`
@@ -1160,171 +1125,58 @@ type CustomRule struct {
 
 // CustomRuleConditionInput The criteria of an incoming web request and the models of the various values those criteria can take
 type CustomRuleConditionInput struct {
-	ContentType *struct {
-		// Embedded struct due to allOf(#/components/schemas/ContentTypeCondition)
-		ContentTypeCondition `yaml:",inline"`
-	} `json:"content_type"`
-	Country *struct {
-		// Embedded struct due to allOf(#/components/schemas/CountryCondition)
-		CountryCondition `yaml:",inline"`
-	} `json:"country"`
-	FileExtension *struct {
-		// Embedded struct due to allOf(#/components/schemas/FileExtensionCondition)
-		FileExtensionCondition `yaml:",inline"`
-	} `json:"file_extension"`
-	Header *struct {
-		// Embedded struct due to allOf(#/components/schemas/HeaderCondition)
-		HeaderCondition `yaml:",inline"`
-	} `json:"header"`
-	HeaderExists *struct {
-		// Embedded struct due to allOf(#/components/schemas/HeaderExistsCondition)
-		HeaderExistsCondition `yaml:",inline"`
-	} `json:"header_exists"`
-	HttpMethod *struct {
-		// Embedded struct due to allOf(#/components/schemas/HttpMethodCondition)
-		HttpMethodCondition `yaml:",inline"`
-	} `json:"http_method"`
-	Ip *struct {
-		// Embedded struct due to allOf(#/components/schemas/IpCondition)
-		IpCondition `yaml:",inline"`
-	} `json:"ip"`
-	IpRange *struct {
-		// Embedded struct due to allOf(#/components/schemas/IpRangeCondition)
-		IpRangeCondition `yaml:",inline"`
-	} `json:"ip_range"`
-	Organization *struct {
-		// Embedded struct due to allOf(#/components/schemas/OrganizationCondition)
-		OrganizationCondition `yaml:",inline"`
-	} `json:"organization"`
-	OwnerTypes *struct {
-		// Embedded struct due to allOf(#/components/schemas/OwnerTypesCondition)
-		OwnerTypesCondition `yaml:",inline"`
-	} `json:"owner_types"`
-	RequestRate *struct {
-		// Embedded struct due to allOf(#/components/schemas/RequestRateCondition)
-		RequestRateCondition `yaml:",inline"`
-	} `json:"request_rate"`
-	ResponseHeader *struct {
-		// Embedded struct due to allOf(#/components/schemas/ResponseHeaderCondition)
-		ResponseHeaderCondition `yaml:",inline"`
-	} `json:"response_header"`
-	ResponseHeaderExists *struct {
-		// Embedded struct due to allOf(#/components/schemas/ResponseHeaderExistsCondition)
-		ResponseHeaderExistsCondition `yaml:",inline"`
-	} `json:"response_header_exists"`
-	SessionRequestCount *struct {
-		// Embedded struct due to allOf(#/components/schemas/SessionRequestCountCondition)
-		SessionRequestCountCondition `yaml:",inline"`
-	} `json:"session_request_count"`
-	Tags *struct {
-		// Embedded struct due to allOf(#/components/schemas/TagsCondition)
-		TagsCondition `yaml:",inline"`
-	} `json:"tags"`
-	Url *struct {
-		// Embedded struct due to allOf(#/components/schemas/UrlCondition)
-		UrlCondition `yaml:",inline"`
-	} `json:"url"`
-	UserAgent *struct {
-		// Embedded struct due to allOf(#/components/schemas/UserAgentCondition)
-		UserAgentCondition `yaml:",inline"`
-	} `json:"user_agent"`
-	UserDefinedTags *struct {
-		// Embedded struct due to allOf(#/components/schemas/UserDefinedTagsCondition)
-		UserDefinedTagsCondition `yaml:",inline"`
-	} `json:"user_defined_tags"`
+	ContentType          *ContentTypeCondition          `json:"content_type"`
+	Country              *CountryCondition              `json:"country"`
+	FileExtension        *FileExtensionCondition        `json:"file_extension"`
+	Header               *HeaderCondition               `json:"header"`
+	HeaderExists         *HeaderExistsCondition         `json:"header_exists"`
+	HttpMethod           *HttpMethodCondition           `json:"http_method"`
+	Ip                   *IpCondition                   `json:"ip"`
+	IpRange              *IpRangeCondition              `json:"ip_range"`
+	Organization         *OrganizationCondition         `json:"organization"`
+	OwnerTypes           *OwnerTypesCondition           `json:"owner_types"`
+	RequestRate          *RequestRateCondition          `json:"request_rate"`
+	ResponseHeader       *ResponseHeaderCondition       `json:"response_header"`
+	ResponseHeaderExists *ResponseHeaderExistsCondition `json:"response_header_exists"`
+	SessionRequestCount  *SessionRequestCountCondition  `json:"session_request_count"`
+	Tags                 *TagsCondition                 `json:"tags"`
+	Url                  *UrlCondition                  `json:"url"`
+	UserAgent            *UserAgentCondition            `json:"user_agent"`
+	UserDefinedTags      *UserDefinedTagsCondition      `json:"user_defined_tags"`
 }
 
 // CustomRuleConditionOutput The criteria of an incoming web request and the models of the various values those criteria can take
 type CustomRuleConditionOutput struct {
-	ContentType *struct {
-		// Embedded struct due to allOf(#/components/schemas/ContentTypeCondition)
-		ContentTypeCondition `yaml:",inline"`
-	} `json:"content_type"`
-	Country *struct {
-		// Embedded struct due to allOf(#/components/schemas/CountryCondition)
-		CountryCondition `yaml:",inline"`
-	} `json:"country"`
-	FileExtension *struct {
-		// Embedded struct due to allOf(#/components/schemas/FileExtensionCondition)
-		FileExtensionCondition `yaml:",inline"`
-	} `json:"file_extension"`
-	Header *struct {
-		// Embedded struct due to allOf(#/components/schemas/HeaderCondition)
-		HeaderCondition `yaml:",inline"`
-	} `json:"header"`
-	HeaderExists *struct {
-		// Embedded struct due to allOf(#/components/schemas/HeaderExistsCondition)
-		HeaderExistsCondition `yaml:",inline"`
-	} `json:"header_exists"`
-	HttpMethod *struct {
-		// Embedded struct due to allOf(#/components/schemas/HttpMethodCondition)
-		HttpMethodCondition `yaml:",inline"`
-	} `json:"http_method"`
-	Ip *struct {
-		// Embedded struct due to allOf(#/components/schemas/IpCondition)
-		IpCondition `yaml:",inline"`
-	} `json:"ip"`
-	IpRange *struct {
-		// Embedded struct due to allOf(#/components/schemas/IpRangeCondition)
-		IpRangeCondition `yaml:",inline"`
-	} `json:"ip_range"`
-	Organization *struct {
-		// Embedded struct due to allOf(#/components/schemas/OrganizationCondition)
-		OrganizationCondition `yaml:",inline"`
-	} `json:"organization"`
-	OwnerTypes *struct {
-		// Embedded struct due to allOf(#/components/schemas/OwnerTypesCondition)
-		OwnerTypesCondition `yaml:",inline"`
-	} `json:"owner_types"`
-	RequestRate *struct {
-		// Embedded struct due to allOf(#/components/schemas/RequestRateCondition)
-		RequestRateCondition `yaml:",inline"`
-	} `json:"request_rate"`
-	ResponseHeader *struct {
-		// Embedded struct due to allOf(#/components/schemas/ResponseHeaderCondition)
-		ResponseHeaderCondition `yaml:",inline"`
-	} `json:"response_header"`
-	ResponseHeaderExists *struct {
-		// Embedded struct due to allOf(#/components/schemas/ResponseHeaderExistsCondition)
-		ResponseHeaderExistsCondition `yaml:",inline"`
-	} `json:"response_header_exists"`
-	SessionRequestCount *struct {
-		// Embedded struct due to allOf(#/components/schemas/SessionRequestCountCondition)
-		SessionRequestCountCondition `yaml:",inline"`
-	} `json:"session_request_count"`
-	Tags *struct {
-		// Embedded struct due to allOf(#/components/schemas/TagsCondition)
-		TagsCondition `yaml:",inline"`
-	} `json:"tags"`
-	Url *struct {
-		// Embedded struct due to allOf(#/components/schemas/UrlCondition)
-		UrlCondition `yaml:",inline"`
-	} `json:"url"`
-	UserAgent *struct {
-		// Embedded struct due to allOf(#/components/schemas/UserAgentCondition)
-		UserAgentCondition `yaml:",inline"`
-	} `json:"user_agent"`
-	UserDefinedTags *struct {
-		// Embedded struct due to allOf(#/components/schemas/UserDefinedTagsCondition)
-		UserDefinedTagsCondition `yaml:",inline"`
-	} `json:"user_defined_tags"`
+	ContentType          *ContentTypeCondition          `json:"content_type"`
+	Country              *CountryCondition              `json:"country"`
+	FileExtension        *FileExtensionCondition        `json:"file_extension"`
+	Header               *HeaderCondition               `json:"header"`
+	HeaderExists         *HeaderExistsCondition         `json:"header_exists"`
+	HttpMethod           *HttpMethodCondition           `json:"http_method"`
+	Ip                   *IpCondition                   `json:"ip"`
+	IpRange              *IpRangeCondition              `json:"ip_range"`
+	Organization         *OrganizationCondition         `json:"organization"`
+	OwnerTypes           *OwnerTypesCondition           `json:"owner_types"`
+	RequestRate          *RequestRateCondition          `json:"request_rate"`
+	ResponseHeader       *ResponseHeaderCondition       `json:"response_header"`
+	ResponseHeaderExists *ResponseHeaderExistsCondition `json:"response_header_exists"`
+	SessionRequestCount  *SessionRequestCountCondition  `json:"session_request_count"`
+	Tags                 *TagsCondition                 `json:"tags"`
+	Url                  *UrlCondition                  `json:"url"`
+	UserAgent            *UserAgentCondition            `json:"user_agent"`
+	UserDefinedTags      *UserDefinedTagsCondition      `json:"user_defined_tags"`
 }
 
 // CustomRuleResponse An WAAP rule applied to a domain
 type CustomRuleResponse struct {
 	// Action The action that the rule takes when triggered
-	Action struct {
-		// Embedded struct due to allOf(#/components/schemas/CustomerRuleAction-Output)
-		CustomerRuleActionOutput `yaml:",inline"`
-	} `json:"action"`
+	Action CustomerRuleActionOutput `json:"action"`
 
 	// Conditions The conditions required for the WAAP engine to trigger the rule. Rules may have between 1 and 5 conditions. All conditions must pass for the rule to trigger
 	Conditions []CustomRuleConditionOutput `json:"conditions"`
 
 	// Description The description assigned to the rule
-	Description *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"description"`
+	Description *string `json:"description"`
 
 	// Enabled Whether or not the rule is enabled
 	Enabled bool `json:"enabled"`
@@ -1338,58 +1190,22 @@ type CustomRuleResponse struct {
 
 // CustomerRuleActionInput The action that a WAAP rule takes when triggered
 type CustomerRuleActionInput struct {
-	Allow *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleAllowAction)
-		RuleAllowAction `yaml:",inline"`
-	} `json:"allow"`
-	Block *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleBlockAction)
-		RuleBlockAction `yaml:",inline"`
-	} `json:"block"`
-	Captcha *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleCaptchaAction)
-		RuleCaptchaAction `yaml:",inline"`
-	} `json:"captcha"`
-	Handshake *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleHandshakeAction)
-		RuleHandshakeAction `yaml:",inline"`
-	} `json:"handshake"`
-	Monitor *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleMonitorAction)
-		RuleMonitorAction `yaml:",inline"`
-	} `json:"monitor"`
-	Tag *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleTagAction)
-		RuleTagAction `yaml:",inline"`
-	} `json:"tag"`
+	Allow     *RuleAllowAction     `json:"allow"`
+	Block     *RuleBlockAction     `json:"block"`
+	Captcha   *RuleCaptchaAction   `json:"captcha"`
+	Handshake *RuleHandshakeAction `json:"handshake"`
+	Monitor   *RuleMonitorAction   `json:"monitor"`
+	Tag       *RuleTagAction       `json:"tag"`
 }
 
 // CustomerRuleActionOutput The action that a WAAP rule takes when triggered
 type CustomerRuleActionOutput struct {
-	Allow *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleAllowAction)
-		RuleAllowAction `yaml:",inline"`
-	} `json:"allow"`
-	Block *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleBlockAction)
-		RuleBlockAction `yaml:",inline"`
-	} `json:"block"`
-	Captcha *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleCaptchaAction)
-		RuleCaptchaAction `yaml:",inline"`
-	} `json:"captcha"`
-	Handshake *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleHandshakeAction)
-		RuleHandshakeAction `yaml:",inline"`
-	} `json:"handshake"`
-	Monitor *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleMonitorAction)
-		RuleMonitorAction `yaml:",inline"`
-	} `json:"monitor"`
-	Tag *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleTagAction)
-		RuleTagAction `yaml:",inline"`
-	} `json:"tag"`
+	Allow     *RuleAllowAction     `json:"allow"`
+	Block     *RuleBlockAction     `json:"block"`
+	Captcha   *RuleCaptchaAction   `json:"captcha"`
+	Handshake *RuleHandshakeAction `json:"handshake"`
+	Monitor   *RuleMonitorAction   `json:"monitor"`
+	Tag       *RuleTagAction       `json:"tag"`
 }
 
 // CustomerRuleState defines model for CustomerRuleState.
@@ -1398,9 +1214,7 @@ type CustomerRuleState string
 // DdosAttack defines model for DdosAttack.
 type DdosAttack struct {
 	// EndTime End time of DDoS attack
-	EndTime *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"end_time"`
+	EndTime *time.Time `json:"end_time"`
 
 	// StartTime Start time of DDoS attack
 	StartTime *time.Time `json:"start_time,omitempty"`
@@ -1428,9 +1242,7 @@ type DdosInfoType string
 type DetailedDomainResponse struct {
 	// CreatedAt The date and time the domain was created in ISO 8601 format
 	CreatedAt     time.Time `json:"created_at"`
-	CustomPageSet *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"custom_page_set"`
+	CustomPageSet *int      `json:"custom_page_set"`
 
 	// Id The domain ID
 	Id int `json:"id"`
@@ -1439,9 +1251,7 @@ type DetailedDomainResponse struct {
 	Name string `json:"name"`
 
 	// Quotas Domain level quotas
-	Quotas *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"quotas"`
+	Quotas *map[string]QuotaItem `json:"quotas"`
 
 	// Status The different statuses a domain can have
 	Status DomainStatus `json:"status"`
@@ -1462,10 +1272,7 @@ type DomainDdosSettings struct {
 // DomainPolicy Represents a configurable WAAP security rule, also known as a policy.
 type DomainPolicy struct {
 	// Action Specifies the action taken by the WAAP upon rule activation
-	Action struct {
-		// Embedded struct due to allOf(#/components/schemas/PolicyAction)
-		PolicyAction `yaml:",inline"`
-	} `json:"action"`
+	Action PolicyAction `json:"action"`
 
 	// Description Detailed description of the security rule
 	Description string `json:"description"`
@@ -1522,18 +1329,13 @@ type FileExtensionCondition struct {
 // FirewallRule defines model for FirewallRule.
 type FirewallRule struct {
 	// Action The action that the rule takes when triggered
-	Action struct {
-		// Embedded struct due to allOf(#/components/schemas/FirewallRuleAction-Input)
-		FirewallRuleActionInput `yaml:",inline"`
-	} `json:"action"`
+	Action FirewallRuleActionInput `json:"action"`
 
 	// Conditions The condition required for the WAAP engine to trigger the rule.
 	Conditions []FirewallRuleCondition `json:"conditions"`
 
 	// Description The description assigned to the rule
-	Description *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"description"`
+	Description *string `json:"description"`
 
 	// Enabled Whether or not the rule is enabled
 	Enabled bool `json:"enabled"`
@@ -1544,55 +1346,32 @@ type FirewallRule struct {
 
 // FirewallRuleActionInput The action that a firewall rule takes when triggered
 type FirewallRuleActionInput struct {
-	Allow *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleAllowAction)
-		RuleAllowAction `yaml:",inline"`
-	} `json:"allow"`
-	Block *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleBlockAction)
-		RuleBlockAction `yaml:",inline"`
-	} `json:"block"`
+	Allow *RuleAllowAction `json:"allow"`
+	Block *RuleBlockAction `json:"block"`
 }
 
 // FirewallRuleActionOutput The action that a firewall rule takes when triggered
 type FirewallRuleActionOutput struct {
-	Allow *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleAllowAction)
-		RuleAllowAction `yaml:",inline"`
-	} `json:"allow"`
-	Block *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleBlockAction)
-		RuleBlockAction `yaml:",inline"`
-	} `json:"block"`
+	Allow *RuleAllowAction `json:"allow"`
+	Block *RuleBlockAction `json:"block"`
 }
 
 // FirewallRuleCondition The criteria of an incoming web request and the models of the various values those criteria can take
 type FirewallRuleCondition struct {
-	Ip *struct {
-		// Embedded struct due to allOf(#/components/schemas/IpCondition)
-		IpCondition `yaml:",inline"`
-	} `json:"ip"`
-	IpRange *struct {
-		// Embedded struct due to allOf(#/components/schemas/IpRangeCondition)
-		IpRangeCondition `yaml:",inline"`
-	} `json:"ip_range"`
+	Ip      *IpCondition      `json:"ip"`
+	IpRange *IpRangeCondition `json:"ip_range"`
 }
 
 // FirewallRuleResponse defines model for FirewallRuleResponse.
 type FirewallRuleResponse struct {
 	// Action The action that the rule takes when triggered
-	Action struct {
-		// Embedded struct due to allOf(#/components/schemas/FirewallRuleAction-Output)
-		FirewallRuleActionOutput `yaml:",inline"`
-	} `json:"action"`
+	Action FirewallRuleActionOutput `json:"action"`
 
 	// Conditions The condition required for the WAAP engine to trigger the rule.
 	Conditions []FirewallRuleCondition `json:"conditions"`
 
 	// Description The description assigned to the rule
-	Description *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"description"`
+	Description *string `json:"description"`
 
 	// Enabled Whether or not the rule is enabled
 	Enabled bool `json:"enabled"`
@@ -1657,10 +1436,7 @@ type HeaderExistsCondition struct {
 // HttpMethodCondition Match the incoming HTTP method
 type HttpMethodCondition struct {
 	// HttpMethod HTTP methods of a request
-	HttpMethod struct {
-		// Embedded struct due to allOf(#/components/schemas/HTTPMethod)
-		HTTPMethod `yaml:",inline"`
-	} `json:"http_method"`
+	HttpMethod HTTPMethod `json:"http_method"`
 
 	// Negation Whether or not to apply a boolean NOT operation to the rule's condition
 	Negation *bool `json:"negation,omitempty"`
@@ -1693,10 +1469,7 @@ type Insight struct {
 	Recommendation string `json:"recommendation"`
 
 	// Status The status of the insight
-	Status struct {
-		// Embedded struct due to allOf(#/components/schemas/InsightStatus)
-		InsightStatus `yaml:",inline"`
-	} `json:"status"`
+	Status InsightStatus `json:"status"`
 }
 
 // InsightSilence defines model for InsightSilence.
@@ -1708,9 +1481,7 @@ type InsightSilence struct {
 	Comment string `json:"comment"`
 
 	// ExpireAt The date and time the silence expires in ISO 8601 format
-	ExpireAt *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"expire_at"`
+	ExpireAt *time.Time `json:"expire_at"`
 
 	// Id A generated unique identifier for the silence
 	Id openapi_types.UUID `json:"id"`
@@ -1805,10 +1576,7 @@ type IpInfo struct {
 	Tags []string `json:"tags"`
 
 	// Whois The WHOIS information for the IP address
-	Whois struct {
-		// Embedded struct due to allOf(#/components/schemas/WhoisInfo)
-		WhoisInfo `yaml:",inline"`
-	} `json:"whois"`
+	Whois WhoisInfo `json:"whois"`
 }
 
 // IpInfoRiskScore The risk score of the IP address
@@ -2171,21 +1939,11 @@ type PolicyMode struct {
 
 // PreviewCustomPage defines model for PreviewCustomPage.
 type PreviewCustomPage struct {
-	Error *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"error"`
-	Header *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"header"`
-	Logo *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"logo"`
-	Text *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"text"`
-	Title *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"title"`
+	Error  *string `json:"error"`
+	Header *string `json:"header"`
+	Logo   *string `json:"logo"`
+	Text   *string `json:"text"`
+	Title  *string `json:"title"`
 }
 
 // QuotaItem defines model for QuotaItem.
@@ -2275,10 +2033,7 @@ type RequestDetails struct {
 	TrafficTypes []string `json:"traffic_types"`
 
 	// UserAgent User agent
-	UserAgent struct {
-		// Embedded struct due to allOf(#/components/schemas/UserAgent)
-		UserAgent `yaml:",inline"`
-	} `json:"user_agent"`
+	UserAgent UserAgent `json:"user_agent"`
 }
 
 // RequestDetailsResult The result of a request
@@ -2287,14 +2042,10 @@ type RequestDetailsResult string
 // RequestRateCondition Match the rate at which requests come in that match certain conditions
 type RequestRateCondition struct {
 	// HttpMethods Possible HTTP request methods that can trigger a request rate condition
-	HttpMethods *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"http_methods"`
+	HttpMethods *[]HTTPMethod `json:"http_methods"`
 
 	// Ips A list of source IPs that can trigger a request rate condition
-	Ips *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"ips"`
+	Ips *[]RequestRateCondition_Ips_Item `json:"ips"`
 
 	// Negation Whether or not to apply a boolean NOT operation to the rule's condition
 	Negation *bool `json:"negation,omitempty"`
@@ -2309,9 +2060,18 @@ type RequestRateCondition struct {
 	Time int `json:"time"`
 
 	// UserDefinedTag A user-defined tag that can be included in incoming requests and used to trigger a request rate condition
-	UserDefinedTag *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"user_defined_tag"`
+	UserDefinedTag *string `json:"user_defined_tag"`
+}
+
+// RequestRateConditionIps0 defines model for .
+type RequestRateConditionIps0 = string
+
+// RequestRateConditionIps1 defines model for .
+type RequestRateConditionIps1 = string
+
+// RequestRateCondition_Ips_Item defines model for RequestRateCondition.ips.Item.
+type RequestRateCondition_Ips_Item struct {
+	union json.RawMessage
 }
 
 // RequestSummary Request summary used when displaying a list of requests
@@ -2408,15 +2168,10 @@ type RuleAllowAction = map[string]interface{}
 // RuleBlockAction WAAP block action behavior could be configured with response status code and action duration.
 type RuleBlockAction struct {
 	// ActionDuration How long a rule's block action will apply to subsequent requests. Can be specified in seconds or by using a numeral followed by 's', 'm', 'h', or 'd' to represent time format (seconds, minutes, hours, or days)
-	ActionDuration *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"action_duration"`
+	ActionDuration *string `json:"action_duration"`
 
 	// StatusCode A custom HTTP status code that the WAAP returns if a rule blocks a request
-	StatusCode *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleBlockStatusCode)
-		RuleBlockStatusCode `yaml:",inline"`
-	} `json:"status_code"`
+	StatusCode *RuleBlockStatusCode `json:"status_code"`
 }
 
 // RuleBlockStatusCode Designates the HTTP status code to deliver when a request is blocked.
@@ -2458,10 +2213,8 @@ type RuleSet struct {
 	Name string `json:"name"`
 
 	// ResourceSlug The resource slug associated with the rule set.
-	ResourceSlug *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"resource_slug"`
-	Rules *[]DomainPolicy `json:"rules,omitempty"`
+	ResourceSlug *string         `json:"resource_slug"`
+	Rules        *[]DomainPolicy `json:"rules,omitempty"`
 
 	// Tags Collection of tags associated with the rule set.
 	Tags []AppModelsPoliciesTag `json:"tags"`
@@ -2506,23 +2259,17 @@ type StatisticItem struct {
 // StatisticsSeries Response model for the statistics series
 type StatisticsSeries struct {
 	// TotalBytes Will be returned if `total_bytes` is requested in the metrics parameter
-	TotalBytes *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"total_bytes"`
+	TotalBytes *[]StatisticItem `json:"total_bytes"`
 
 	// TotalRequests Will be included if `total_requests` is requested in the metrics parameter
-	TotalRequests *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"total_requests"`
+	TotalRequests *[]StatisticItem `json:"total_requests"`
 }
 
 // SummaryDomainResponse Represents a WAAP domain when getting a list of domains.
 type SummaryDomainResponse struct {
 	// CreatedAt The date and time the domain was created in ISO 8601 format
 	CreatedAt     time.Time `json:"created_at"`
-	CustomPageSet *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"custom_page_set"`
+	CustomPageSet *int      `json:"custom_page_set"`
 
 	// Id The domain ID
 	Id int `json:"id"`
@@ -2672,25 +2419,16 @@ type TrafficType string
 // UpdateAdvancedRule A request to update an advanced WAAP rule
 type UpdateAdvancedRule struct {
 	// Action The action that the rule takes when triggered
-	Action *struct {
-		// Embedded struct due to allOf(#/components/schemas/CustomerRuleAction-Input)
-		CustomerRuleActionInput `yaml:",inline"`
-	} `json:"action"`
+	Action *CustomerRuleActionInput `json:"action"`
 
 	// Description The description assigned to the rule
-	Description *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"description"`
+	Description *string `json:"description"`
 
 	// Enabled Whether or not the rule is enabled
-	Enabled *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"enabled"`
+	Enabled *bool `json:"enabled"`
 
 	// Name The name assigned to the rule
-	Name *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"name"`
+	Name *string `json:"name"`
 
 	// Phase The WAAP request/response phase for applying the rule.
 	//
@@ -2700,44 +2438,33 @@ type UpdateAdvancedRule struct {
 	// The "header_filter" phase is responsible for modifying the HTTP headers of a response before they are sent back to the client.
 	//
 	// The "body_filter" phase is responsible for modifying the body of a response before it is sent back to the client.
-	Phase *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"phase"`
+	Phase *UpdateAdvancedRulePhase `json:"phase"`
 
 	// Source A CEL syntax expression that contains the rule's conditions. Allowed objects are: request, whois, session, response, tags, user_defined_tags, user_agent, client_data.
 	//
 	// More info can be found here: https://gcore.com/docs/waap/waap-rules/advanced-rules
-	Source *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"source"`
+	Source *string `json:"source"`
 }
+
+// UpdateAdvancedRulePhase defines model for UpdateAdvancedRule.Phase.
+type UpdateAdvancedRulePhase string
 
 // UpdateApiDiscoverySettings Request model for updating the API discovery settings
 type UpdateApiDiscoverySettings struct {
 	// DescriptionFileLocation The URL of the API description file. This will be periodically scanned if `descriptionFileScanEnabled` is enabled. Supported formats are YAML and JSON, and it must adhere to OpenAPI versions 2, 3, or 3.1.
-	DescriptionFileLocation *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"descriptionFileLocation"`
+	DescriptionFileLocation *string `json:"descriptionFileLocation"`
 
 	// DescriptionFileScanEnabled Indicates if periodic scan of the description file is enabled
-	DescriptionFileScanEnabled *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"descriptionFileScanEnabled"`
+	DescriptionFileScanEnabled *bool `json:"descriptionFileScanEnabled"`
 
 	// DescriptionFileScanIntervalHours The interval in hours for scanning the description file
-	DescriptionFileScanIntervalHours *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"descriptionFileScanIntervalHours"`
+	DescriptionFileScanIntervalHours *int `json:"descriptionFileScanIntervalHours"`
 
 	// TrafficScanEnabled Indicates if traffic scan is enabled
-	TrafficScanEnabled *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"trafficScanEnabled"`
+	TrafficScanEnabled *bool `json:"trafficScanEnabled"`
 
 	// TrafficScanIntervalHours The interval in hours for scanning the traffic
-	TrafficScanIntervalHours *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"trafficScanIntervalHours"`
+	TrafficScanIntervalHours *int `json:"trafficScanIntervalHours"`
 }
 
 // UpdateApiPath Request model for updating an API path
@@ -2749,10 +2476,7 @@ type UpdateApiPath struct {
 	Path *string `json:"path,omitempty"`
 
 	// Status The status of the discovered API path
-	Status *struct {
-		// Embedded struct due to allOf(#/components/schemas/ApiPathStatus)
-		ApiPathStatus `yaml:",inline"`
-	} `json:"status,omitempty"`
+	Status *ApiPathStatus `json:"status,omitempty"`
 
 	// Tags An array of tags associated with the API path
 	Tags *[]string `json:"tags,omitempty"`
@@ -2761,39 +2485,25 @@ type UpdateApiPath struct {
 // UpdateCustomRule A request to update a WAAP rule
 type UpdateCustomRule struct {
 	// Action The action that the rule takes when triggered
-	Action *struct {
-		// Embedded struct due to allOf(#/components/schemas/CustomerRuleAction-Input)
-		CustomerRuleActionInput `yaml:",inline"`
-	} `json:"action"`
+	Action *CustomerRuleActionInput `json:"action"`
 
 	// Conditions The conditions required for the WAAP engine to trigger the rule. Rules may have between 1 and 5 conditions. All conditions must pass for the rule to trigger
-	Conditions *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"conditions"`
+	Conditions *[]CustomRuleConditionInput `json:"conditions"`
 
 	// Description The description assigned to the rule
-	Description *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"description"`
+	Description *string `json:"description"`
 
 	// Enabled Whether or not the rule is enabled
-	Enabled *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"enabled"`
+	Enabled *bool `json:"enabled"`
 
 	// Name The name assigned to the rule
-	Name *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"name"`
+	Name *string `json:"name"`
 }
 
 // UpdateDomain defines model for UpdateDomain.
 type UpdateDomain struct {
 	// Status The current status of the domain
-	Status *struct {
-		// Embedded struct due to allOf(#/components/schemas/DomainUpdateStatus)
-		DomainUpdateStatus `yaml:",inline"`
-	} `json:"status,omitempty"`
+	Status *DomainUpdateStatus `json:"status,omitempty"`
 }
 
 // UpdateDomainDdosSettings Editable DDoS settings for a domain.
@@ -2807,52 +2517,32 @@ type UpdateDomainDdosSettings struct {
 
 // UpdateDomainSettings Represents the editable settings for a domain.
 type UpdateDomainSettings struct {
-	Api *struct {
-		// Embedded struct due to allOf(#/components/schemas/app__models__domain_settings__UpdateApiUrls)
-		AppModelsDomainSettingsUpdateApiUrls `yaml:",inline"`
-	} `json:"api,omitempty"`
-	Ddos *struct {
-		// Embedded struct due to allOf(#/components/schemas/UpdateDomainDdosSettings)
-		UpdateDomainDdosSettings `yaml:",inline"`
-	} `json:"ddos,omitempty"`
+	Api  *AppModelsDomainSettingsUpdateApiUrls `json:"api,omitempty"`
+	Ddos *UpdateDomainDdosSettings             `json:"ddos,omitempty"`
 }
 
 // UpdateFirewallRule defines model for UpdateFirewallRule.
 type UpdateFirewallRule struct {
 	// Action The action that the rule takes when triggered
-	Action *struct {
-		// Embedded struct due to allOf(#/components/schemas/CustomerRuleAction-Input)
-		CustomerRuleActionInput `yaml:",inline"`
-	} `json:"action"`
+	Action *CustomerRuleActionInput `json:"action"`
 
 	// Conditions The condition required for the WAAP engine to trigger the rule.
-	Conditions *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"conditions"`
+	Conditions *[]FirewallRuleCondition `json:"conditions"`
 
 	// Description The description assigned to the rule
-	Description *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"description"`
+	Description *string `json:"description"`
 
 	// Enabled Whether or not the rule is enabled
-	Enabled *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"enabled"`
+	Enabled *bool `json:"enabled"`
 
 	// Name The name assigned to the rule
-	Name *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"name"`
+	Name *string `json:"name"`
 }
 
 // UpdateInsightPayload defines model for UpdateInsightPayload.
 type UpdateInsightPayload struct {
 	// Status The status of the insight
-	Status struct {
-		// Embedded struct due to allOf(#/components/schemas/InsightStatus)
-		InsightStatus `yaml:",inline"`
-	} `json:"status"`
+	Status InsightStatus `json:"status"`
 }
 
 // UpdateInsightSilencePayload defines model for UpdateInsightSilencePayload.
@@ -2864,9 +2554,7 @@ type UpdateInsightSilencePayload struct {
 	Comment string `json:"comment"`
 
 	// ExpireAt The date and time the silence expires in ISO 8601 format
-	ExpireAt *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"expire_at"`
+	ExpireAt *time.Time `json:"expire_at"`
 
 	// Labels A hash table of label names and values that apply to the insight silence
 	Labels *map[string]string `json:"labels,omitempty"`
@@ -2950,64 +2638,40 @@ type UserDefinedTagsCondition struct {
 // WhoisInfo defines model for WhoisInfo.
 type WhoisInfo struct {
 	// AbuseMail The abuse mail
-	AbuseMail *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"abuse_mail"`
+	AbuseMail *string `json:"abuse_mail"`
 
 	// Cidr The CIDR
-	Cidr *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"cidr"`
+	Cidr *int `json:"cidr"`
 
 	// Country The country
-	Country *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"country"`
+	Country *string `json:"country"`
 
 	// NetDescription The network description
-	NetDescription *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"net_description"`
+	NetDescription *string `json:"net_description"`
 
 	// NetName The network name
-	NetName *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"net_name"`
+	NetName *string `json:"net_name"`
 
 	// NetRange The network range
-	NetRange *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"net_range"`
+	NetRange *string `json:"net_range"`
 
 	// NetType The network type
-	NetType *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"net_type"`
+	NetType *string `json:"net_type"`
 
 	// OrgId The organization ID
-	OrgId *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"org_id"`
+	OrgId *string `json:"org_id"`
 
 	// OrgName The organization name
-	OrgName *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"org_name"`
+	OrgName *string `json:"org_name"`
 
 	// OwnerType The owner type
-	OwnerType *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"owner_type"`
+	OwnerType *string `json:"owner_type"`
 
 	// Rir The RIR
-	Rir *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"rir"`
+	Rir *string `json:"rir"`
 
 	// State The state
-	State *struct {
-		// Embedded fields due to inline allOf schema
-	} `json:"state"`
+	State *string `json:"state"`
 }
 
 // AppModelsApiDiscoveryApiUrls Request model for updating the API URLs
@@ -3109,10 +2773,7 @@ type GetDomainsV1DomainsGetParams struct {
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Status Filter domains based on the domain status
-	Status *struct {
-		// Embedded struct due to allOf(#/components/schemas/DomainStatus)
-		DomainStatus `yaml:",inline"`
-	} `form:"status,omitempty" json:"status,omitempty"`
+	Status *DomainStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// Name Filter domains based on the domain name. Supports '*' as a wildcard character
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
@@ -3127,9 +2788,7 @@ type GetDomainsV1DomainsGetParamsOrdering string
 // GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParams defines parameters for GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGet.
 type GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParams struct {
 	// Ordering Determine the field to order results by
-	Ordering *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"ordering,omitempty" json:"ordering,omitempty"`
+	Ordering *GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering `form:"ordering,omitempty" json:"ordering,omitempty"`
 
 	// Limit Number of items to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -3144,10 +2803,7 @@ type GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParams struct {
 	Description *string `form:"description,omitempty" json:"description,omitempty"`
 
 	// Action Filter to refine results by specific actions
-	Action *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleActionType)
-		RuleActionType `yaml:",inline"`
-	} `form:"action,omitempty" json:"action,omitempty"`
+	Action *RuleActionType `form:"action,omitempty" json:"action,omitempty"`
 
 	// Enabled Filter rules based on their active status
 	Enabled *bool `form:"enabled,omitempty" json:"enabled,omitempty"`
@@ -3163,6 +2819,9 @@ type GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParams struct {
 	Phase *GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsPhase `form:"phase,omitempty" json:"phase,omitempty"`
 }
 
+// GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering defines parameters for GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGet.
+type GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsOrdering string
+
 // GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsPhase defines parameters for GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGet.
 type GetAdvancedRulesV1DomainsDomainIdAdvancedRulesGetParamsPhase string
 
@@ -3172,21 +2831,13 @@ type GetScanResultsV1DomainsDomainIdApiDiscoveryScanResultsGetParams struct {
 	Ordering *GetScanResultsV1DomainsDomainIdApiDiscoveryScanResultsGetParamsOrdering `form:"ordering,omitempty" json:"ordering,omitempty"`
 
 	// Type Filter by the path of the scan type
-	Type *struct {
-		// Embedded struct due to allOf(#/components/schemas/ApiScanType)
-		ApiScanType `yaml:",inline"`
-	} `form:"type,omitempty" json:"type,omitempty"`
+	Type *ApiScanType `form:"type,omitempty" json:"type,omitempty"`
 
 	// Status Filter by the status of the scan
-	Status *struct {
-		// Embedded struct due to allOf(#/components/schemas/TaskResultStatus)
-		TaskResultStatus `yaml:",inline"`
-	} `form:"status,omitempty" json:"status,omitempty"`
+	Status *TaskResultStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// Message Filter by the message of the scan. Supports '*' as a wildcard character
-	Message *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"message,omitempty" json:"message,omitempty"`
+	Message *string `form:"message,omitempty" json:"message,omitempty"`
 
 	// Limit Number of items to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -3204,47 +2855,28 @@ type GetApiPathsV1DomainsDomainIdApiPathsGetParams struct {
 	Ordering *GetApiPathsV1DomainsDomainIdApiPathsGetParamsOrdering `form:"ordering,omitempty" json:"ordering,omitempty"`
 
 	// Ids Filter by the path ID
-	Ids *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"ids,omitempty" json:"ids,omitempty"`
+	Ids *[]openapi_types.UUID `form:"ids,omitempty" json:"ids,omitempty"`
 
 	// Path Filter by the path. Supports '*' as a wildcard character
-	Path *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"path,omitempty" json:"path,omitempty"`
+	Path *string `form:"path,omitempty" json:"path,omitempty"`
 
 	// Method Filter by the API RESTful method
-	Method *struct {
-		// Embedded struct due to allOf(#/components/schemas/ApiPathMethod)
-		ApiPathMethod `yaml:",inline"`
-	} `form:"method,omitempty" json:"method,omitempty"`
+	Method *ApiPathMethod `form:"method,omitempty" json:"method,omitempty"`
 
 	// ApiVersion Filter by the API version
-	ApiVersion *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"api_version,omitempty" json:"api_version,omitempty"`
+	ApiVersion *string `form:"api_version,omitempty" json:"api_version,omitempty"`
 
 	// HttpScheme Filter by the HTTP version of the API path
-	HttpScheme *struct {
-		// Embedded struct due to allOf(#/components/schemas/ApiPathHttpScheme)
-		ApiPathHttpScheme `yaml:",inline"`
-	} `form:"http_scheme,omitempty" json:"http_scheme,omitempty"`
+	HttpScheme *ApiPathHttpScheme `form:"http_scheme,omitempty" json:"http_scheme,omitempty"`
 
 	// ApiGroup Filter by the API group associated with the API path
-	ApiGroup *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"api_group,omitempty" json:"api_group,omitempty"`
+	ApiGroup *string `form:"api_group,omitempty" json:"api_group,omitempty"`
 
 	// Status Filter by the status of the discovered API path
-	Status *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"status,omitempty" json:"status,omitempty"`
+	Status *[]ApiPathStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// Source Filter by the source of the discovered API
-	Source *struct {
-		// Embedded struct due to allOf(#/components/schemas/ApiPathSource)
-		ApiPathSource `yaml:",inline"`
-	} `form:"source,omitempty" json:"source,omitempty"`
+	Source *ApiPathSource `form:"source,omitempty" json:"source,omitempty"`
 
 	// Limit Number of items to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -3259,9 +2891,7 @@ type GetApiPathsV1DomainsDomainIdApiPathsGetParamsOrdering string
 // GetCustomRulesV1DomainsDomainIdCustomRulesGetParams defines parameters for GetCustomRulesV1DomainsDomainIdCustomRulesGet.
 type GetCustomRulesV1DomainsDomainIdCustomRulesGetParams struct {
 	// Ordering Determine the field to order results by
-	Ordering *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"ordering,omitempty" json:"ordering,omitempty"`
+	Ordering *GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrdering `form:"ordering,omitempty" json:"ordering,omitempty"`
 
 	// Limit Number of items to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -3276,14 +2906,14 @@ type GetCustomRulesV1DomainsDomainIdCustomRulesGetParams struct {
 	Description *string `form:"description,omitempty" json:"description,omitempty"`
 
 	// Action Filter to refine results by specific actions
-	Action *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleActionType)
-		RuleActionType `yaml:",inline"`
-	} `form:"action,omitempty" json:"action,omitempty"`
+	Action *RuleActionType `form:"action,omitempty" json:"action,omitempty"`
 
 	// Enabled Filter rules based on their active status
 	Enabled *bool `form:"enabled,omitempty" json:"enabled,omitempty"`
 }
+
+// GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrdering defines parameters for GetCustomRulesV1DomainsDomainIdCustomRulesGet.
+type GetCustomRulesV1DomainsDomainIdCustomRulesGetParamsOrdering string
 
 // GetDdosAttacksV1DomainsDomainIdDdosAttacksGetParams defines parameters for GetDdosAttacksV1DomainsDomainIdDdosAttacksGet.
 type GetDdosAttacksV1DomainsDomainIdDdosAttacksGetParams struct {
@@ -3297,14 +2927,10 @@ type GetDdosAttacksV1DomainsDomainIdDdosAttacksGetParams struct {
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// StartTime Filter attacks starting from a specified date in ISO 8601 format
-	StartTime *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"start_time,omitempty" json:"start_time,omitempty"`
+	StartTime *time.Time `form:"start_time,omitempty" json:"start_time,omitempty"`
 
 	// EndTime Filter attacks up to a specified end date in ISO 8601 format
-	EndTime *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"end_time,omitempty" json:"end_time,omitempty"`
+	EndTime *time.Time `form:"end_time,omitempty" json:"end_time,omitempty"`
 }
 
 // GetDdosAttacksV1DomainsDomainIdDdosAttacksGetParamsOrdering defines parameters for GetDdosAttacksV1DomainsDomainIdDdosAttacksGet.
@@ -3334,9 +2960,7 @@ type GetDdosInfoV1DomainsDomainIdDdosInfoGetParamsGroupBy string
 // GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParams defines parameters for GetFirewallRulesV1DomainsDomainIdFirewallRulesGet.
 type GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParams struct {
 	// Ordering Determine the field to order results by
-	Ordering *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"ordering,omitempty" json:"ordering,omitempty"`
+	Ordering *GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrdering `form:"ordering,omitempty" json:"ordering,omitempty"`
 
 	// Limit Number of items to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -3351,21 +2975,18 @@ type GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParams struct {
 	Description *string `form:"description,omitempty" json:"description,omitempty"`
 
 	// Action Filter to refine results by specific actions
-	Action *struct {
-		// Embedded struct due to allOf(#/components/schemas/RuleActionType)
-		RuleActionType `yaml:",inline"`
-	} `form:"action,omitempty" json:"action,omitempty"`
+	Action *RuleActionType `form:"action,omitempty" json:"action,omitempty"`
 
 	// Enabled Filter rules based on their active status
 	Enabled *bool `form:"enabled,omitempty" json:"enabled,omitempty"`
 }
 
+// GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrdering defines parameters for GetFirewallRulesV1DomainsDomainIdFirewallRulesGet.
+type GetFirewallRulesV1DomainsDomainIdFirewallRulesGetParamsOrdering string
+
 // GetInsightSilencesV1DomainsDomainIdInsightSilencesGetParams defines parameters for GetInsightSilencesV1DomainsDomainIdInsightSilencesGet.
 type GetInsightSilencesV1DomainsDomainIdInsightSilencesGetParams struct {
-	Ordering *struct {
-		// Embedded struct due to allOf(#/components/schemas/InsightSilenceSortBy)
-		InsightSilenceSortBy `yaml:",inline"`
-	} `form:"ordering,omitempty" json:"ordering,omitempty"`
+	Ordering *InsightSilenceSortBy `form:"ordering,omitempty" json:"ordering,omitempty"`
 
 	// Limit Number of items to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -3374,32 +2995,21 @@ type GetInsightSilencesV1DomainsDomainIdInsightSilencesGetParams struct {
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Id The ID of the insight silence
-	Id *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"id,omitempty" json:"id,omitempty"`
+	Id *[]openapi_types.UUID `form:"id,omitempty" json:"id,omitempty"`
 
 	// InsightType The type of the insight silence
-	InsightType *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"insight_type,omitempty" json:"insight_type,omitempty"`
+	InsightType *[]string `form:"insight_type,omitempty" json:"insight_type,omitempty"`
 
 	// Comment The comment of the insight silence
-	Comment *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"comment,omitempty" json:"comment,omitempty"`
+	Comment *string `form:"comment,omitempty" json:"comment,omitempty"`
 
 	// Author The author of the insight silence
-	Author *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"author,omitempty" json:"author,omitempty"`
+	Author *string `form:"author,omitempty" json:"author,omitempty"`
 }
 
 // GetInsightsV1DomainsDomainIdInsightsGetParams defines parameters for GetInsightsV1DomainsDomainIdInsightsGet.
 type GetInsightsV1DomainsDomainIdInsightsGetParams struct {
-	Ordering *struct {
-		// Embedded struct due to allOf(#/components/schemas/InsightSortBy)
-		InsightSortBy `yaml:",inline"`
-	} `form:"ordering,omitempty" json:"ordering,omitempty"`
+	Ordering *InsightSortBy `form:"ordering,omitempty" json:"ordering,omitempty"`
 
 	// Limit Number of items to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -3408,24 +3018,16 @@ type GetInsightsV1DomainsDomainIdInsightsGetParams struct {
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Id The ID of the insight
-	Id *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"id,omitempty" json:"id,omitempty"`
+	Id *[]openapi_types.UUID `form:"id,omitempty" json:"id,omitempty"`
 
 	// InsightType The type of the insight
-	InsightType *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"insight_type,omitempty" json:"insight_type,omitempty"`
+	InsightType *[]string `form:"insight_type,omitempty" json:"insight_type,omitempty"`
 
 	// Status The status of the insight
-	Status *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"status,omitempty" json:"status,omitempty"`
+	Status *[]InsightStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// Description The description of the insight. Supports '*' as a wildcard.
-	Description *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"description,omitempty" json:"description,omitempty"`
+	Description *string `form:"description,omitempty" json:"description,omitempty"`
 }
 
 // GetRequestsV1DomainsDomainIdRequestsGetParams defines parameters for GetRequestsV1DomainsDomainIdRequestsGet.
@@ -3479,33 +3081,28 @@ type GetEventStatisticsV1DomainsDomainIdStatsGetParams struct {
 	End *time.Time `form:"end,omitempty" json:"end,omitempty"`
 
 	// Ip A list of IPs to filter event statistics.
-	Ip *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"ip,omitempty" json:"ip,omitempty"`
+	Ip *[]string `form:"ip,omitempty" json:"ip,omitempty"`
 
 	// ReferenceId A list of reference IDs to filter event statistics.
-	ReferenceId *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"reference_id,omitempty" json:"reference_id,omitempty"`
+	ReferenceId *[]string `form:"reference_id,omitempty" json:"reference_id,omitempty"`
 
 	// Action A list of action names to filter on.
-	Action *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"action,omitempty" json:"action,omitempty"`
+	Action *[]GetEventStatisticsV1DomainsDomainIdStatsGetParamsAction `form:"action,omitempty" json:"action,omitempty"`
 
 	// Result A list of results to filter event statistics.
-	Result *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"result,omitempty" json:"result,omitempty"`
+	Result *[]GetEventStatisticsV1DomainsDomainIdStatsGetParamsResult `form:"result,omitempty" json:"result,omitempty"`
 }
+
+// GetEventStatisticsV1DomainsDomainIdStatsGetParamsAction defines parameters for GetEventStatisticsV1DomainsDomainIdStatsGet.
+type GetEventStatisticsV1DomainsDomainIdStatsGetParamsAction string
+
+// GetEventStatisticsV1DomainsDomainIdStatsGetParamsResult defines parameters for GetEventStatisticsV1DomainsDomainIdStatsGet.
+type GetEventStatisticsV1DomainsDomainIdStatsGetParamsResult string
 
 // GetTrafficV1DomainsDomainIdTrafficGetParams defines parameters for GetTrafficV1DomainsDomainIdTrafficGet.
 type GetTrafficV1DomainsDomainIdTrafficGetParams struct {
 	// Resolution Specifies the granularity of the result data.
-	Resolution struct {
-		// Embedded struct due to allOf(#/components/schemas/Resolution)
-		Resolution `yaml:",inline"`
-	} `form:"resolution" json:"resolution"`
+	Resolution Resolution `form:"resolution" json:"resolution"`
 
 	// Start Filter traffic starting from a specified date in ISO 8601 format
 	Start time.Time `form:"start" json:"start"`
@@ -3658,9 +3255,7 @@ type GetTopUserAgentsV1IpInfoTopUserAgentsGetParamsIp1 = string
 // GetOrganizationsV1OrganizationsGetParams defines parameters for GetOrganizationsV1OrganizationsGet.
 type GetOrganizationsV1OrganizationsGetParams struct {
 	// Ordering Determine the field to order results by
-	Ordering *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"ordering,omitempty" json:"ordering,omitempty"`
+	Ordering *GetOrganizationsV1OrganizationsGetParamsOrdering `form:"ordering,omitempty" json:"ordering,omitempty"`
 
 	// Limit Number of items to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -3671,6 +3266,9 @@ type GetOrganizationsV1OrganizationsGetParams struct {
 	// Name Filter organizations by their name. Supports '*' as a wildcard character.
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 }
+
+// GetOrganizationsV1OrganizationsGetParamsOrdering defines parameters for GetOrganizationsV1OrganizationsGet.
+type GetOrganizationsV1OrganizationsGetParamsOrdering string
 
 // PreviewCustomPageV1PreviewCustomPagePostParams defines parameters for PreviewCustomPageV1PreviewCustomPagePost.
 type PreviewCustomPageV1PreviewCustomPagePostParams struct {
@@ -3688,19 +3286,13 @@ type GetInsightTypesV1SecurityInsightsTypesGetParams struct {
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Name Filter by the name of the insight type
-	Name *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"name,omitempty" json:"name,omitempty"`
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
 	// Slug Filter by the slug of the insight type
-	Slug *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"slug,omitempty" json:"slug,omitempty"`
+	Slug *string `form:"slug,omitempty" json:"slug,omitempty"`
 
 	// InsightFrequency Filter by the frequency of the insight type
-	InsightFrequency *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"insight_frequency,omitempty" json:"insight_frequency,omitempty"`
+	InsightFrequency *int `form:"insight_frequency,omitempty" json:"insight_frequency,omitempty"`
 }
 
 // GetInsightTypesV1SecurityInsightsTypesGetParamsOrdering defines parameters for GetInsightTypesV1SecurityInsightsTypesGet.
@@ -3730,9 +3322,7 @@ type GetStatisticsSeriesV1StatisticsSeriesGetParamsMetrics string
 // GetTagsV1TagsGetParams defines parameters for GetTagsV1TagsGet.
 type GetTagsV1TagsGetParams struct {
 	// Ordering Determine the field to order results by
-	Ordering *struct {
-		// Embedded fields due to inline allOf schema
-	} `form:"ordering,omitempty" json:"ordering,omitempty"`
+	Ordering *GetTagsV1TagsGetParamsOrdering `form:"ordering,omitempty" json:"ordering,omitempty"`
 
 	// Limit Number of items to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -3746,6 +3336,9 @@ type GetTagsV1TagsGetParams struct {
 	// Reserved Filter to include only reserved tags.
 	Reserved *bool `form:"reserved,omitempty" json:"reserved,omitempty"`
 }
+
+// GetTagsV1TagsGetParamsOrdering defines parameters for GetTagsV1TagsGet.
+type GetTagsV1TagsGetParamsOrdering string
 
 // CreateCustomPageSetV1CustomPageSetsPostJSONRequestBody defines body for CreateCustomPageSetV1CustomPageSetsPost for application/json ContentType.
 type CreateCustomPageSetV1CustomPageSetsPostJSONRequestBody = CustomPageSetCreate
@@ -4616,6 +4209,68 @@ func (t *IpRangeCondition_UpperBound) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsRequestRateConditionIps0 returns the union data inside the RequestRateCondition_Ips_Item as a RequestRateConditionIps0
+func (t RequestRateCondition_Ips_Item) AsRequestRateConditionIps0() (RequestRateConditionIps0, error) {
+	var body RequestRateConditionIps0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromRequestRateConditionIps0 overwrites any union data inside the RequestRateCondition_Ips_Item as the provided RequestRateConditionIps0
+func (t *RequestRateCondition_Ips_Item) FromRequestRateConditionIps0(v RequestRateConditionIps0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeRequestRateConditionIps0 performs a merge with any union data inside the RequestRateCondition_Ips_Item, using the provided RequestRateConditionIps0
+func (t *RequestRateCondition_Ips_Item) MergeRequestRateConditionIps0(v RequestRateConditionIps0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsRequestRateConditionIps1 returns the union data inside the RequestRateCondition_Ips_Item as a RequestRateConditionIps1
+func (t RequestRateCondition_Ips_Item) AsRequestRateConditionIps1() (RequestRateConditionIps1, error) {
+	var body RequestRateConditionIps1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromRequestRateConditionIps1 overwrites any union data inside the RequestRateCondition_Ips_Item as the provided RequestRateConditionIps1
+func (t *RequestRateCondition_Ips_Item) FromRequestRateConditionIps1(v RequestRateConditionIps1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeRequestRateConditionIps1 performs a merge with any union data inside the RequestRateCondition_Ips_Item, using the provided RequestRateConditionIps1
+func (t *RequestRateCondition_Ips_Item) MergeRequestRateConditionIps1(v RequestRateConditionIps1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t RequestRateCondition_Ips_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *RequestRateCondition_Ips_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
 
@@ -4748,10 +4403,7 @@ type ClientInterface interface {
 	UpdateAdvancedRuleV1DomainsDomainIdAdvancedRulesRuleIdPatch(ctx context.Context, domainId int, ruleId int, body UpdateAdvancedRuleV1DomainsDomainIdAdvancedRulesRuleIdPatchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatch request
-	ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatch(ctx context.Context, domainId int, ruleId int, action struct {
-		// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-		CustomerRuleState `yaml:",inline"`
-	}, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatch(ctx context.Context, domainId int, ruleId int, action CustomerRuleState, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetApiUrlsV1DomainsDomainIdApiDiscoveryApiUrlsGet request
 	GetApiUrlsV1DomainsDomainIdApiDiscoveryApiUrlsGet(ctx context.Context, domainId int, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4830,10 +4482,7 @@ type ClientInterface interface {
 	UpdateCustomRuleV1DomainsDomainIdCustomRulesRuleIdPatch(ctx context.Context, domainId int, ruleId int, body UpdateCustomRuleV1DomainsDomainIdCustomRulesRuleIdPatchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatch request
-	ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatch(ctx context.Context, domainId int, ruleId int, action struct {
-		// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-		CustomerRuleState `yaml:",inline"`
-	}, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatch(ctx context.Context, domainId int, ruleId int, action CustomerRuleState, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetDdosAttacksV1DomainsDomainIdDdosAttacksGet request
 	GetDdosAttacksV1DomainsDomainIdDdosAttacksGet(ctx context.Context, domainId int, params *GetDdosAttacksV1DomainsDomainIdDdosAttacksGetParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4866,10 +4515,7 @@ type ClientInterface interface {
 	UpdateFirewallRuleV1DomainsDomainIdFirewallRulesRuleIdPatch(ctx context.Context, domainId int, ruleId int, body UpdateFirewallRuleV1DomainsDomainIdFirewallRulesRuleIdPatchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatch request
-	ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatch(ctx context.Context, domainId int, ruleId int, action struct {
-		// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-		CustomerRuleState `yaml:",inline"`
-	}, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatch(ctx context.Context, domainId int, ruleId int, action CustomerRuleState, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetInsightSilencesV1DomainsDomainIdInsightSilencesGet request
 	GetInsightSilencesV1DomainsDomainIdInsightSilencesGet(ctx context.Context, domainId int, params *GetInsightSilencesV1DomainsDomainIdInsightSilencesGetParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5224,10 +4870,7 @@ func (c *ClientSDK) UpdateAdvancedRuleV1DomainsDomainIdAdvancedRulesRuleIdPatch(
 	return c.Client.Do(req)
 }
 
-func (c *ClientSDK) ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatch(ctx context.Context, domainId int, ruleId int, action struct {
-	// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-	CustomerRuleState `yaml:",inline"`
-}, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *ClientSDK) ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatch(ctx context.Context, domainId int, ruleId int, action CustomerRuleState, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchRequest(c.Server, domainId, ruleId, action)
 	if err != nil {
 		return nil, err
@@ -5575,10 +5218,7 @@ func (c *ClientSDK) UpdateCustomRuleV1DomainsDomainIdCustomRulesRuleIdPatch(ctx 
 	return c.Client.Do(req)
 }
 
-func (c *ClientSDK) ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatch(ctx context.Context, domainId int, ruleId int, action struct {
-	// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-	CustomerRuleState `yaml:",inline"`
-}, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *ClientSDK) ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatch(ctx context.Context, domainId int, ruleId int, action CustomerRuleState, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchRequest(c.Server, domainId, ruleId, action)
 	if err != nil {
 		return nil, err
@@ -5722,10 +5362,7 @@ func (c *ClientSDK) UpdateFirewallRuleV1DomainsDomainIdFirewallRulesRuleIdPatch(
 	return c.Client.Do(req)
 }
 
-func (c *ClientSDK) ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatch(ctx context.Context, domainId int, ruleId int, action struct {
-	// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-	CustomerRuleState `yaml:",inline"`
-}, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *ClientSDK) ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatch(ctx context.Context, domainId int, ruleId int, action CustomerRuleState, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchRequest(c.Server, domainId, ruleId, action)
 	if err != nil {
 		return nil, err
@@ -7075,10 +6712,7 @@ func NewUpdateAdvancedRuleV1DomainsDomainIdAdvancedRulesRuleIdPatchRequestWithBo
 }
 
 // NewToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchRequest generates requests for ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatch
-func NewToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchRequest(server string, domainId int, ruleId int, action struct {
-	// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-	CustomerRuleState `yaml:",inline"`
-}) (*http.Request, error) {
+func NewToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchRequest(server string, domainId int, ruleId int, action CustomerRuleState) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -8361,10 +7995,7 @@ func NewUpdateCustomRuleV1DomainsDomainIdCustomRulesRuleIdPatchRequestWithBody(s
 }
 
 // NewToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchRequest generates requests for ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatch
-func NewToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchRequest(server string, domainId int, ruleId int, action struct {
-	// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-	CustomerRuleState `yaml:",inline"`
-}) (*http.Request, error) {
+func NewToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchRequest(server string, domainId int, ruleId int, action CustomerRuleState) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -9026,10 +8657,7 @@ func NewUpdateFirewallRuleV1DomainsDomainIdFirewallRulesRuleIdPatchRequestWithBo
 }
 
 // NewToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchRequest generates requests for ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatch
-func NewToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchRequest(server string, domainId int, ruleId int, action struct {
-	// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-	CustomerRuleState `yaml:",inline"`
-}) (*http.Request, error) {
+func NewToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchRequest(server string, domainId int, ruleId int, action CustomerRuleState) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -11344,10 +10972,7 @@ type ClientWithResponsesInterface interface {
 	UpdateAdvancedRuleV1DomainsDomainIdAdvancedRulesRuleIdPatchWithResponse(ctx context.Context, domainId int, ruleId int, body UpdateAdvancedRuleV1DomainsDomainIdAdvancedRulesRuleIdPatchJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAdvancedRuleV1DomainsDomainIdAdvancedRulesRuleIdPatchResponse, error)
 
 	// ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchWithResponse request
-	ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchWithResponse(ctx context.Context, domainId int, ruleId int, action struct {
-		// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-		CustomerRuleState `yaml:",inline"`
-	}, reqEditors ...RequestEditorFn) (*ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchResponse, error)
+	ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchWithResponse(ctx context.Context, domainId int, ruleId int, action CustomerRuleState, reqEditors ...RequestEditorFn) (*ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchResponse, error)
 
 	// GetApiUrlsV1DomainsDomainIdApiDiscoveryApiUrlsGetWithResponse request
 	GetApiUrlsV1DomainsDomainIdApiDiscoveryApiUrlsGetWithResponse(ctx context.Context, domainId int, reqEditors ...RequestEditorFn) (*GetApiUrlsV1DomainsDomainIdApiDiscoveryApiUrlsGetResponse, error)
@@ -11426,10 +11051,7 @@ type ClientWithResponsesInterface interface {
 	UpdateCustomRuleV1DomainsDomainIdCustomRulesRuleIdPatchWithResponse(ctx context.Context, domainId int, ruleId int, body UpdateCustomRuleV1DomainsDomainIdCustomRulesRuleIdPatchJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCustomRuleV1DomainsDomainIdCustomRulesRuleIdPatchResponse, error)
 
 	// ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchWithResponse request
-	ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchWithResponse(ctx context.Context, domainId int, ruleId int, action struct {
-		// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-		CustomerRuleState `yaml:",inline"`
-	}, reqEditors ...RequestEditorFn) (*ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchResponse, error)
+	ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchWithResponse(ctx context.Context, domainId int, ruleId int, action CustomerRuleState, reqEditors ...RequestEditorFn) (*ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchResponse, error)
 
 	// GetDdosAttacksV1DomainsDomainIdDdosAttacksGetWithResponse request
 	GetDdosAttacksV1DomainsDomainIdDdosAttacksGetWithResponse(ctx context.Context, domainId int, params *GetDdosAttacksV1DomainsDomainIdDdosAttacksGetParams, reqEditors ...RequestEditorFn) (*GetDdosAttacksV1DomainsDomainIdDdosAttacksGetResponse, error)
@@ -11462,10 +11084,7 @@ type ClientWithResponsesInterface interface {
 	UpdateFirewallRuleV1DomainsDomainIdFirewallRulesRuleIdPatchWithResponse(ctx context.Context, domainId int, ruleId int, body UpdateFirewallRuleV1DomainsDomainIdFirewallRulesRuleIdPatchJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateFirewallRuleV1DomainsDomainIdFirewallRulesRuleIdPatchResponse, error)
 
 	// ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchWithResponse request
-	ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchWithResponse(ctx context.Context, domainId int, ruleId int, action struct {
-		// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-		CustomerRuleState `yaml:",inline"`
-	}, reqEditors ...RequestEditorFn) (*ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchResponse, error)
+	ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchWithResponse(ctx context.Context, domainId int, ruleId int, action CustomerRuleState, reqEditors ...RequestEditorFn) (*ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchResponse, error)
 
 	// GetInsightSilencesV1DomainsDomainIdInsightSilencesGetWithResponse request
 	GetInsightSilencesV1DomainsDomainIdInsightSilencesGetWithResponse(ctx context.Context, domainId int, params *GetInsightSilencesV1DomainsDomainIdInsightSilencesGetParams, reqEditors ...RequestEditorFn) (*GetInsightSilencesV1DomainsDomainIdInsightSilencesGetResponse, error)
@@ -13709,10 +13328,7 @@ func (c *ClientWithResponses) UpdateAdvancedRuleV1DomainsDomainIdAdvancedRulesRu
 }
 
 // ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchWithResponse request returning *ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchResponse
-func (c *ClientWithResponses) ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchWithResponse(ctx context.Context, domainId int, ruleId int, action struct {
-	// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-	CustomerRuleState `yaml:",inline"`
-}, reqEditors ...RequestEditorFn) (*ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchResponse, error) {
+func (c *ClientWithResponses) ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchWithResponse(ctx context.Context, domainId int, ruleId int, action CustomerRuleState, reqEditors ...RequestEditorFn) (*ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatchResponse, error) {
 	rsp, err := c.ToggleRuleV1DomainsDomainIdAdvancedRulesRuleIdActionPatch(ctx, domainId, ruleId, action, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -13965,10 +13581,7 @@ func (c *ClientWithResponses) UpdateCustomRuleV1DomainsDomainIdCustomRulesRuleId
 }
 
 // ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchWithResponse request returning *ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchResponse
-func (c *ClientWithResponses) ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchWithResponse(ctx context.Context, domainId int, ruleId int, action struct {
-	// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-	CustomerRuleState `yaml:",inline"`
-}, reqEditors ...RequestEditorFn) (*ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchResponse, error) {
+func (c *ClientWithResponses) ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchWithResponse(ctx context.Context, domainId int, ruleId int, action CustomerRuleState, reqEditors ...RequestEditorFn) (*ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatchResponse, error) {
 	rsp, err := c.ToggleRuleV1DomainsDomainIdCustomRulesRuleIdActionPatch(ctx, domainId, ruleId, action, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -14073,10 +13686,7 @@ func (c *ClientWithResponses) UpdateFirewallRuleV1DomainsDomainIdFirewallRulesRu
 }
 
 // ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchWithResponse request returning *ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchResponse
-func (c *ClientWithResponses) ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchWithResponse(ctx context.Context, domainId int, ruleId int, action struct {
-	// Embedded struct due to allOf(#/components/schemas/CustomerRuleState)
-	CustomerRuleState `yaml:",inline"`
-}, reqEditors ...RequestEditorFn) (*ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchResponse, error) {
+func (c *ClientWithResponses) ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchWithResponse(ctx context.Context, domainId int, ruleId int, action CustomerRuleState, reqEditors ...RequestEditorFn) (*ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatchResponse, error) {
 	rsp, err := c.ToggleRuleV1DomainsDomainIdFirewallRulesRuleIdActionPatch(ctx, domainId, ruleId, action, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -18228,556 +17838,4 @@ func ParseGetTagsV1TagsGetResponse(rsp *http.Response) (*GetTagsV1TagsGetRespons
 	}
 
 	return response, nil
-}
-
-// Base64 encoded, gzipped, json marshaled Swagger object
-var swaggerSpec = []string{
-
-	"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",
-	"lcmm0+nZE+fp2cmXT1/+CgAA//9LitaqZ7UEAA==",
-}
-
-// GetSwagger returns the content of the embedded swagger specification file
-// or error if failed to decode
-func decodeSpec() ([]byte, error) {
-	zipped, err := base64.StdEncoding.DecodeString(strings.Join(swaggerSpec, ""))
-	if err != nil {
-		return nil, fmt.Errorf("error base64 decoding spec: %w", err)
-	}
-	zr, err := gzip.NewReader(bytes.NewReader(zipped))
-	if err != nil {
-		return nil, fmt.Errorf("error decompressing spec: %w", err)
-	}
-	var buf bytes.Buffer
-	_, err = buf.ReadFrom(zr)
-	if err != nil {
-		return nil, fmt.Errorf("error decompressing spec: %w", err)
-	}
-
-	return buf.Bytes(), nil
-}
-
-var rawSpec = decodeSpecCached()
-
-// a naive cached of a decoded swagger spec
-func decodeSpecCached() func() ([]byte, error) {
-	data, err := decodeSpec()
-	return func() ([]byte, error) {
-		return data, err
-	}
-}
-
-// Constructs a synthetic filesystem for resolving external references when loading openapi specifications.
-func PathToRawSpec(pathToFile string) map[string]func() ([]byte, error) {
-	res := make(map[string]func() ([]byte, error))
-	if len(pathToFile) > 0 {
-		res[pathToFile] = rawSpec
-	}
-
-	return res
-}
-
-// GetSwagger returns the Swagger specification corresponding to the generated code
-// in this file. The external references of Swagger specification are resolved.
-// The logic of resolving external references is tightly connected to "import-mapping" feature.
-// Externally referenced files must be embedded in the corresponding golang packages.
-// Urls can be supported but this task was out of the scope.
-func GetSwagger() (swagger *openapi3.T, err error) {
-	resolvePath := PathToRawSpec("")
-
-	loader := openapi3.NewLoader()
-	loader.IsExternalRefsAllowed = true
-	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
-		pathToFile := url.String()
-		pathToFile = path.Clean(pathToFile)
-		getSpec, ok := resolvePath[pathToFile]
-		if !ok {
-			err1 := fmt.Errorf("path not found: %s", pathToFile)
-			return nil, err1
-		}
-		return getSpec()
-	}
-	var specData []byte
-	specData, err = rawSpec()
-	if err != nil {
-		return
-	}
-	swagger, err = loader.LoadFromData(specData)
-	if err != nil {
-		return
-	}
-	return
 }

@@ -1,10 +1,9 @@
 package: sdk
 generate:
-  embedded-spec: true
+  embedded-spec: false
   models: true
   client: true
 compatibility:
-  old-merge-schemas: true
   always-prefix-enum-values: true
 output: sdk.gen.go
 output-options:
